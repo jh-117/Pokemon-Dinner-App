@@ -7,6 +7,7 @@ import WeeklyPlanView from './components/WeeklyPlanView';
 import Library from './components/Library';
 import GameView from './components/GameView';
 import TVView from './components/TVView';
+import LoadingOverlay from './components/LoadingOverlay'; // New import
 import { Utensils, BookMarked, Gamepad2, Tv } from 'lucide-react'; 
 
 const App: React.FC = () => {
@@ -69,14 +70,11 @@ const App: React.FC = () => {
     setCurrentMeal(null);
     setWeeklyPlan(null);
     
-    // NOTE: We do NOT strictly set view to 'home' here immediately if we want to show loading state in Game/TV views
-    // But for simplicity, we switch to 'home' when the result is ready to show the card.
-    
     try {
       if (prefs.planMode === 'weekly') {
         const plan = await generateWeeklyPlan(prefs);
         setWeeklyPlan(plan);
-        setView('home'); // Switch to home to view results
+        setView('home'); 
       } else {
         // Step 1: Generate Text Content
         const suggestion = await generateMealIdea(prefs);
@@ -88,10 +86,10 @@ const App: React.FC = () => {
         };
         
         setCurrentMeal(newMeal);
-        setIsLoading(false); 
-        setView('home'); // Switch to home to view results
+        setIsLoading(false); // Text is ready, stop main loading
+        setView('home'); 
         
-        // Step 2: Generate Image
+        // Step 2: Generate Image (Background process)
         setIsImageLoading(true);
         const imageUrl = await generateMealImage(newMeal.name, newMeal.description);
         
@@ -106,8 +104,10 @@ const App: React.FC = () => {
       setIsLoading(false);
       setIsImageLoading(false);
     } finally {
-      // setIsLoading(false) is handled in try block for success, or catch for error
-      // But we need to ensure it's off if something weird happens, though current flow covers it.
+      // Ensure loading is off if error occurred during initial fetch
+      if (!currentMeal && !weeklyPlan) {
+          setIsLoading(false);
+      }
     }
   };
 
@@ -121,6 +121,9 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen text-poke-dark pb-20 font-sans relative overflow-x-hidden">
       
+      {/* Full Screen Loading Overlay */}
+      {isLoading && <LoadingOverlay />}
+
       {/* Background Pokemon Characters (Fixed Position) */}
       <div className="fixed inset-0 pointer-events-none z-0">
           {/* Pikachu - Top Left */}
