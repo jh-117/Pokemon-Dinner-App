@@ -90,8 +90,16 @@ const LiveCookingSession: React.FC<LiveCookingSessionProps> = ({ meal, onClose }
         inputAudioContextRef.current = inputCtx;
         audioContextRef.current = outputCtx;
 
-        // Get Microphone Stream
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Get Microphone Stream with Noise Suppression
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+                sampleRate: 16000,
+                channelCount: 1
+            } 
+        });
         streamRef.current = stream;
 
         // Ensure Contexts are running
