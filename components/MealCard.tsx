@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { GeneratedMeal } from '../types';
-import { Clock, Flame, Wallet, Heart, ArrowLeft, ChevronRight, Zap, Shield, Sparkles, ImageIcon, Activity } from 'lucide-react';
+import { Clock, Flame, Wallet, Heart, ArrowLeft, ChevronRight, Zap, Shield, Sparkles, ImageIcon, Activity, Headset } from 'lucide-react';
+import LiveCookingSession from './LiveCookingSession';
 
 interface MealCardProps {
   meal: GeneratedMeal;
@@ -12,25 +13,29 @@ interface MealCardProps {
 
 const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFavorite, onToggleFavorite }) => {
   const [activeTab, setActiveTab] = useState<'ingredients' | 'steps' | 'tips'>('ingredients');
+  const [showLiveSession, setShowLiveSession] = useState(false);
   // Generate a random Pokemon ID between 1 and 800 (approx max for official artwork)
   const [pokemonId] = useState(() => Math.floor(Math.random() * 800) + 1);
 
-  // Determine color theme based on meal attributes (simplified mapping)
+  // Determine color theme based on meal attributes
   const getThemeColor = () => {
     if (meal.tags.includes('Spicy')) return 'bg-poke-red text-poke-red';
     if (meal.tags.includes('Healthy') || meal.tags.includes('Vegetarian')) return 'bg-poke-green text-poke-green';
     if (meal.tags.includes('Seafood')) return 'bg-poke-blue text-poke-blue';
-    return 'bg-poke-yellow text-poke-yellow'; // Default/Comfort
+    return 'bg-poke-yellow text-poke-yellow'; 
   };
 
   const themeClass = getThemeColor();
   const themeBg = themeClass.split(' ')[0];
-  const themeText = themeClass.split(' ')[1];
 
   return (
     <div className="w-full max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 mb-12 relative flex flex-col">
       
-      {/* Back Button - Repositioned to be relative flow instead of absolute overlapping */}
+      {showLiveSession && (
+        <LiveCookingSession meal={meal} onClose={() => setShowLiveSession(false)} />
+      )}
+
+      {/* Back Button */}
       <button 
         onClick={onReset}
         className="self-start mb-6 text-gray-400 hover:text-poke-dark font-bold flex items-center gap-3 transition-all group px-2"
@@ -63,7 +68,6 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
 
             {/* Image Card */}
             <div className="relative aspect-square w-full rounded-[2.5rem] bg-white shadow-poke border border-gray-100 p-8 flex items-center justify-center overflow-hidden group">
-                {/* Background Decor */}
                 <div className={`absolute inset-0 opacity-10 ${themeBg} rounded-[2.5rem]`}></div>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-gradient-to-tr from-white/0 to-white/80 rounded-full blur-3xl"></div>
 
@@ -91,7 +95,6 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
                 </div>
                 )}
                 
-                {/* Favorite Button */}
                 <button
                     onClick={(e) => {
                     e.stopPropagation();
@@ -109,13 +112,12 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
                 </button>
             </div>
 
-            {/* Stats Section (Like Base Stats) */}
+            {/* Stats Section */}
             <div className="bg-white rounded-3xl p-6 shadow-poke border border-gray-100 relative overflow-hidden">
                 <h3 className="font-bold text-lg text-poke-dark mb-4 relative z-10">Base Stats</h3>
                 
                 <div className="flex items-end gap-4 relative z-10">
                     <div className="space-y-4 flex-1">
-                        {/* HP -> Calories */}
                         <div className="flex items-center gap-3">
                             <span className="w-14 text-xs font-bold text-gray-400 uppercase">Energy</span>
                             <span className="w-10 text-sm font-bold text-poke-dark">{meal.calories}</span>
@@ -123,7 +125,6 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
                                 <div className="h-full bg-poke-red rounded-full" style={{ width: `${Math.min(meal.calories / 10, 100)}%` }}></div>
                             </div>
                         </div>
-                        {/* Speed -> Time */}
                         <div className="flex items-center gap-3">
                             <span className="w-14 text-xs font-bold text-gray-400 uppercase">Time</span>
                             <span className="w-10 text-sm font-bold text-poke-dark">{meal.cookingTime}m</span>
@@ -131,7 +132,6 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
                                 <div className="h-full bg-poke-green rounded-full" style={{ width: `${Math.min(meal.cookingTime, 100)}%` }}></div>
                             </div>
                         </div>
-                        {/* Power -> Budget */}
                         <div className="flex items-center gap-3">
                             <span className="w-14 text-xs font-bold text-gray-400 uppercase">Budget</span>
                             <span className="w-10 text-sm font-bold text-poke-dark">{meal.priceRange.length}/3</span>
@@ -141,7 +141,6 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
                         </div>
                     </div>
 
-                    {/* Random Pokemon Sprite */}
                     <div className="w-24 h-24 shrink-0 -mb-2 -mr-2">
                         <img 
                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`} 
@@ -151,7 +150,6 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
                     </div>
                 </div>
 
-                {/* Nutritional Info (IVs) */}
                 {meal.macros && (
                     <div className="mt-6 pt-4 border-t border-gray-50">
                         <h4 className="font-bold text-xs text-gray-400 uppercase mb-3 flex items-center gap-2">
@@ -178,6 +176,17 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
 
         {/* Right Column: Details Tabs */}
         <div className="w-full md:w-1/2 bg-white rounded-[2.5rem] shadow-poke border border-gray-100 overflow-hidden flex flex-col min-h-[600px]">
+            {/* Action Bar for Live Session */}
+            <div className="p-4 bg-gray-50 border-b border-gray-100 flex gap-2">
+               <button 
+                 onClick={() => setShowLiveSession(true)}
+                 className="flex-1 py-3 bg-poke-dark text-white rounded-xl font-bold shadow-md hover:bg-black transition-all flex items-center justify-center gap-2 group active:translate-y-0.5 active:shadow-sm"
+               >
+                 <Headset className="w-5 h-5 group-hover:animate-bounce" />
+                 Start Live Cooking Class
+               </button>
+            </div>
+
             {/* Tabs Header */}
             <div className="flex p-2 gap-2 border-b border-gray-50">
                 {['ingredients', 'steps', 'tips'].map((tab) => (
@@ -198,7 +207,6 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
             {/* Content Area */}
             <div className="p-8 flex-1 overflow-y-auto custom-scrollbar">
                 
-                {/* Description Text */}
                 <div className="mb-8">
                 <h3 className="font-bold text-lg text-poke-dark mb-2">Description</h3>
                 <p className="text-gray-500 leading-relaxed text-sm">
