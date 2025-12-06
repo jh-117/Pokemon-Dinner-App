@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { WeeklyPlan, GeneratedMeal } from '../types';
-import { Calendar, ShoppingBag, RotateCw, Clock, Flame, Tag, CheckCircle2, ChevronRight, X, Lightbulb, Save, Heart, ArrowLeft } from 'lucide-react';
-import MealCard from './MealCard'; // Re-use the detailed card for the modal
+import { WeeklyPlan, GeneratedMeal, GroceryCategory } from '../types';
+import { Calendar, ShoppingBag, RotateCw, Clock, Flame, Tag, CheckCircle2, ChevronRight, X, Lightbulb, Save, Heart, ArrowLeft, Loader2, ImageIcon } from 'lucide-react';
+import MealCard from './MealCard'; 
 
 interface WeeklyPlanViewProps {
   plan: WeeklyPlan;
@@ -14,11 +14,44 @@ interface WeeklyPlanViewProps {
 
 const WeeklyPlanView: React.FC<WeeklyPlanViewProps> = ({ plan, onReset, onSavePlan, savedPlans, onToggleFavorite, favorites }) => {
   const [selectedMeal, setSelectedMeal] = useState<GeneratedMeal | null>(null);
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const isSaved = savedPlans.some(p => p.id === plan.id);
 
+  // Helper to handle mixed data types (string[] vs GroceryCategory[]) for backward compatibility
+  const getCategories = (): GroceryCategory[] => {
+    if (!plan.groceryList) return [];
+    
+    // Check if it's the old format (array of strings)
+    if (plan.groceryList.length > 0 && typeof plan.groceryList[0] === 'string') {
+        return [{
+            category: 'General',
+            items: plan.groceryList as unknown as string[]
+        }];
+    }
+    return plan.groceryList as GroceryCategory[];
+  };
+
+  const categories = getCategories();
+  const totalItems = categories.reduce((acc, cat) => acc + cat.items.length, 0);
+
+  const toggleItemCheck = (item: string) => {
+    const newSet = new Set(checkedItems);
+    if (newSet.has(item)) {
+        newSet.delete(item);
+    } else {
+        newSet.add(item);
+    }
+    setCheckedItems(newSet);
+  };
+
   const copyToClipboard = () => {
-    const text = `Grocery List:\n${plan.groceryList.join('\n')}`;
+    let text = "PokeDish Grocery List:\n\n";
+    categories.forEach(cat => {
+        text += `[${cat.category}]\n`;
+        cat.items.forEach(item => text += `- ${item}\n`);
+        text += '\n';
+    });
     navigator.clipboard.writeText(text);
     alert('Grocery list copied to clipboard!');
   };
@@ -76,9 +109,14 @@ const WeeklyPlanView: React.FC<WeeklyPlanViewProps> = ({ plan, onReset, onSavePl
                <div className="w-32 h-32 mb-4 relative mt-4">
                   <div className="absolute inset-0 bg-poke-light rounded-full opacity-50 scale-90 group-hover:scale-100 transition-transform"></div>
                   {meal.imageUrl ? (
-                    <img src={meal.imageUrl} alt={meal.name} className="w-full h-full object-contain relative z-10 drop-shadow-lg" />
+                    <img src={meal.imageUrl} alt={meal.name} className="w-full h-full object-contain relative z-10 drop-shadow-lg animate-in fade-in" />
                   ) : (
-                    <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-gray-300 text-xs">No Img</div>
+                    <div className="w-full h-full rounded-full bg-gray-50 flex items-center justify-center text-gray-300 relative border-2 border-dashed border-gray-200">
+                        <div className="flex flex-col items-center">
+                            <Loader2 className="w-5 h-5 animate-spin mb-1 text-poke-blue" />
+                            <span className="text-[10px] font-bold">Loading...</span>
+                        </div>
+                    </div>
                   )}
                </div>
 
@@ -100,7 +138,7 @@ const WeeklyPlanView: React.FC<WeeklyPlanViewProps> = ({ plan, onReset, onSavePl
           ))}
         </div>
 
-        {/* Grocery List (Side Panel) */}
+        {/* Grocery List (Backpack Panel) */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-[2rem] shadow-poke border border-gray-100 overflow-hidden sticky top-24">
              <div className="p-6 border-b border-gray-50 bg-poke-red/5">
@@ -108,17 +146,45 @@ const WeeklyPlanView: React.FC<WeeklyPlanViewProps> = ({ plan, onReset, onSavePl
                    <ShoppingBag className="w-6 h-6" />
                    <h3 className="font-extrabold text-lg">Backpack</h3>
                 </div>
-                <p className="text-xs text-gray-400 mt-1 font-bold ml-9">{plan.groceryList.length} Items</p>
+                <div className="flex justify-between items-center mt-2">
+                    <p className="text-xs text-gray-400 font-bold ml-9">{totalItems} Items</p>
+                    <p className="text-xs text-poke-blue font-bold">{Math.round((checkedItems.size / totalItems) * 100) || 0}% Found</p>
+                </div>
+                {/* Progress Bar */}
+                <div className="h-1.5 w-full bg-gray-100 rounded-full mt-2 overflow-hidden ml-9 max-w-[calc(100%-2.25rem)]">
+                    <div 
+                        className="h-full bg-poke-blue rounded-full transition-all duration-300"
+                        style={{ width: `${(checkedItems.size / totalItems) * 100}%` }}
+                    ></div>
+                </div>
              </div>
              
-             <div className="p-2 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                {plan.groceryList.map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-default group">
-                     <div className="w-5 h-5 rounded-full border-2 border-gray-200 group-hover:border-poke-red flex items-center justify-center shrink-0 mt-0.5">
-                        <div className="w-2.5 h-2.5 rounded-full bg-poke-red opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                     </div>
-                     <span className="text-sm font-medium text-gray-600 group-hover:text-poke-dark leading-snug">{item}</span>
-                  </div>
+             <div className="p-0 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                {categories.map((cat, catIdx) => (
+                    <div key={catIdx} className="border-b border-gray-50 last:border-0">
+                        <div className="bg-gray-50/50 px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest sticky top-0 backdrop-blur-sm z-10">
+                            {cat.category}
+                        </div>
+                        <div className="p-2">
+                            {cat.items.map((item, itemIdx) => {
+                                const isChecked = checkedItems.has(item);
+                                return (
+                                    <div 
+                                        key={`${catIdx}-${itemIdx}`} 
+                                        onClick={() => toggleItemCheck(item)}
+                                        className={`flex items-start gap-3 p-3 rounded-xl transition-all cursor-pointer group select-none ${isChecked ? 'opacity-50' : 'hover:bg-gray-50'}`}
+                                    >
+                                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${isChecked ? 'bg-poke-blue border-poke-blue' : 'border-gray-200 group-hover:border-poke-blue'}`}>
+                                            {isChecked && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                                        </div>
+                                        <span className={`text-sm font-medium leading-snug transition-colors ${isChecked ? 'text-gray-400 line-through decoration-2' : 'text-gray-600 group-hover:text-poke-dark'}`}>
+                                            {item}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
                 ))}
              </div>
 

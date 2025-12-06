@@ -7,7 +7,7 @@ import WeeklyPlanView from './components/WeeklyPlanView';
 import Library from './components/Library';
 import GameView from './components/GameView';
 import TVView from './components/TVView';
-import LoadingOverlay from './components/LoadingOverlay'; // New import
+import LoadingOverlay from './components/LoadingOverlay'; 
 import { Utensils, BookMarked, Gamepad2, Tv } from 'lucide-react'; 
 
 const App: React.FC = () => {
@@ -75,6 +75,30 @@ const App: React.FC = () => {
         const plan = await generateWeeklyPlan(prefs);
         setWeeklyPlan(plan);
         setView('home'); 
+        setIsLoading(false);
+
+        // Background Image Generation for Weekly Plan
+        // We do this after setting the plan so the UI shows up immediately
+        plan.meals.forEach(async (meal) => {
+            try {
+                // Add a small random delay to avoid hitting rate limits too hard if multiple requests fly at once
+                await new Promise(r => setTimeout(r, Math.random() * 2000)); 
+                const imageUrl = await generateMealImage(meal.name, meal.description);
+                if (imageUrl) {
+                    setWeeklyPlan(prev => {
+                        // Ensure we are updating the current plan and it hasn't changed
+                        if (!prev || prev.id !== plan.id) return prev;
+                        return {
+                            ...prev,
+                            meals: prev.meals.map(m => m.id === meal.id ? { ...m, imageUrl } : m)
+                        };
+                    });
+                }
+            } catch (err) {
+                console.warn(`Failed to generate image for ${meal.name}`, err);
+            }
+        });
+
       } else {
         // Step 1: Generate Text Content
         const suggestion = await generateMealIdea(prefs);
@@ -104,8 +128,8 @@ const App: React.FC = () => {
       setIsLoading(false);
       setIsImageLoading(false);
     } finally {
-      // Ensure loading is off if error occurred during initial fetch
-      if (!currentMeal && !weeklyPlan) {
+      // Ensure loading is off if error occurred during initial fetch (already handled above but safe fallback)
+      if (!currentMeal && !weeklyPlan && isLoading) {
           setIsLoading(false);
       }
     }

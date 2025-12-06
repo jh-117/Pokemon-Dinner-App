@@ -45,6 +45,12 @@ export interface UserPreferences {
   planMode: PlanMode;
 }
 
+export interface Macros {
+  protein: string;
+  carbs: string;
+  fat: string;
+}
+
 export interface MealSuggestion {
   name: string;
   description: string;
@@ -55,6 +61,7 @@ export interface MealSuggestion {
   calories: number;
   tags: string[];
   priceRange: string;
+  macros?: Macros; // Optional for backward compatibility
 }
 
 export interface GeneratedMeal extends MealSuggestion {
@@ -63,9 +70,14 @@ export interface GeneratedMeal extends MealSuggestion {
   timestamp: number;
 }
 
+export interface GroceryCategory {
+  category: string;
+  items: string[];
+}
+
 export interface WeeklyPlan {
   id: string;
   timestamp: number;
   meals: GeneratedMeal[];
-  groceryList: string[];
+  groceryList: GroceryCategory[];
 }

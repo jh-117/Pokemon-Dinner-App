@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GeneratedMeal } from '../types';
-import { Clock, Flame, Wallet, Heart, ArrowLeft, ChevronRight, Zap, Shield, Sparkles, ImageIcon } from 'lucide-react';
+import { Clock, Flame, Wallet, Heart, ArrowLeft, ChevronRight, Zap, Shield, Sparkles, ImageIcon, Activity } from 'lucide-react';
 
 interface MealCardProps {
   meal: GeneratedMeal;
@@ -111,45 +111,68 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
 
             {/* Stats Section (Like Base Stats) */}
             <div className="bg-white rounded-3xl p-6 shadow-poke border border-gray-100 relative overflow-hidden">
-            <h3 className="font-bold text-lg text-poke-dark mb-4 relative z-10">Base Stats</h3>
-            
-            <div className="flex items-end gap-4 relative z-10">
-                <div className="space-y-4 flex-1">
-                    {/* HP -> Calories */}
-                    <div className="flex items-center gap-3">
-                        <span className="w-14 text-xs font-bold text-gray-400 uppercase">Energy</span>
-                        <span className="w-10 text-sm font-bold text-poke-dark">{meal.calories}</span>
-                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-poke-red rounded-full" style={{ width: `${Math.min(meal.calories / 10, 100)}%` }}></div>
+                <h3 className="font-bold text-lg text-poke-dark mb-4 relative z-10">Base Stats</h3>
+                
+                <div className="flex items-end gap-4 relative z-10">
+                    <div className="space-y-4 flex-1">
+                        {/* HP -> Calories */}
+                        <div className="flex items-center gap-3">
+                            <span className="w-14 text-xs font-bold text-gray-400 uppercase">Energy</span>
+                            <span className="w-10 text-sm font-bold text-poke-dark">{meal.calories}</span>
+                            <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-poke-red rounded-full" style={{ width: `${Math.min(meal.calories / 10, 100)}%` }}></div>
+                            </div>
+                        </div>
+                        {/* Speed -> Time */}
+                        <div className="flex items-center gap-3">
+                            <span className="w-14 text-xs font-bold text-gray-400 uppercase">Time</span>
+                            <span className="w-10 text-sm font-bold text-poke-dark">{meal.cookingTime}m</span>
+                            <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-poke-green rounded-full" style={{ width: `${Math.min(meal.cookingTime, 100)}%` }}></div>
+                            </div>
+                        </div>
+                        {/* Power -> Budget */}
+                        <div className="flex items-center gap-3">
+                            <span className="w-14 text-xs font-bold text-gray-400 uppercase">Budget</span>
+                            <span className="w-10 text-sm font-bold text-poke-dark">{meal.priceRange.length}/3</span>
+                            <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-poke-blue rounded-full" style={{ width: `${(meal.priceRange.length / 3) * 100}%` }}></div>
+                            </div>
                         </div>
                     </div>
-                    {/* Speed -> Time */}
-                    <div className="flex items-center gap-3">
-                        <span className="w-14 text-xs font-bold text-gray-400 uppercase">Time</span>
-                        <span className="w-10 text-sm font-bold text-poke-dark">{meal.cookingTime}m</span>
-                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-poke-green rounded-full" style={{ width: `${Math.min(meal.cookingTime, 100)}%` }}></div>
-                        </div>
-                    </div>
-                    {/* Power -> Budget */}
-                    <div className="flex items-center gap-3">
-                        <span className="w-14 text-xs font-bold text-gray-400 uppercase">Budget</span>
-                        <span className="w-10 text-sm font-bold text-poke-dark">{meal.priceRange.length}/3</span>
-                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-poke-blue rounded-full" style={{ width: `${(meal.priceRange.length / 3) * 100}%` }}></div>
-                        </div>
+
+                    {/* Random Pokemon Sprite */}
+                    <div className="w-24 h-24 shrink-0 -mb-2 -mr-2">
+                        <img 
+                            src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`} 
+                            alt="Pokemon" 
+                            className="w-full h-full object-contain drop-shadow-md" 
+                        />
                     </div>
                 </div>
 
-                {/* Random Pokemon Sprite */}
-                <div className="w-24 h-24 shrink-0 -mb-2 -mr-2">
-                    <img 
-                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`} 
-                        alt="Pokemon" 
-                        className="w-full h-full object-contain drop-shadow-md" 
-                    />
-                </div>
-            </div>
+                {/* Nutritional Info (IVs) */}
+                {meal.macros && (
+                    <div className="mt-6 pt-4 border-t border-gray-50">
+                        <h4 className="font-bold text-xs text-gray-400 uppercase mb-3 flex items-center gap-2">
+                            <Activity className="w-3 h-3" /> Nutrition (IVs)
+                        </h4>
+                        <div className="grid grid-cols-3 gap-2">
+                            <div className="bg-poke-light rounded-xl p-2 text-center border border-gray-100">
+                                <span className="block text-xs font-bold text-gray-400 uppercase">Protein</span>
+                                <span className="block text-sm font-black text-poke-dark">{meal.macros.protein}</span>
+                            </div>
+                            <div className="bg-poke-light rounded-xl p-2 text-center border border-gray-100">
+                                <span className="block text-xs font-bold text-gray-400 uppercase">Carbs</span>
+                                <span className="block text-sm font-black text-poke-dark">{meal.macros.carbs}</span>
+                            </div>
+                            <div className="bg-poke-light rounded-xl p-2 text-center border border-gray-100">
+                                <span className="block text-xs font-bold text-gray-400 uppercase">Fat</span>
+                                <span className="block text-sm font-black text-poke-dark">{meal.macros.fat}</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
 

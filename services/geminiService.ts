@@ -24,6 +24,16 @@ const mealProperties = {
   },
   cookingTime: { type: Type.NUMBER, description: "Total preparation and cooking time in minutes" },
   calories: { type: Type.NUMBER, description: "Approximate calories per serving" },
+  macros: {
+    type: Type.OBJECT,
+    properties: {
+      protein: { type: Type.STRING, description: "e.g. '25g'" },
+      carbs: { type: Type.STRING, description: "e.g. '40g'" },
+      fat: { type: Type.STRING, description: "e.g. '15g'" }
+    },
+    required: ["protein", "carbs", "fat"],
+    description: "Nutritional macronutrients estimates."
+  },
   tags: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Flavor profile tags" },
   priceRange: { type: Type.STRING, description: "Cost estimation: $, $$, or $$$" }
 };
@@ -31,7 +41,7 @@ const mealProperties = {
 const mealSchema = {
   type: Type.OBJECT,
   properties: mealProperties,
-  required: ["name", "description", "ingredients", "instructions", "tips", "cookingTime", "calories", "tags", "priceRange"],
+  required: ["name", "description", "ingredients", "instructions", "tips", "cookingTime", "calories", "macros", "tags", "priceRange"],
 };
 
 const weeklyPlanSchema = {
@@ -44,8 +54,15 @@ const weeklyPlanSchema = {
     },
     groceryList: {
       type: Type.ARRAY,
-      items: { type: Type.STRING },
-      description: "Consolidated grocery list. Short item names."
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          category: { type: Type.STRING, description: "Category name e.g. Produce, Meat, Spices" },
+          items: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of items in this category" }
+        },
+        required: ["category", "items"]
+      },
+      description: "Consolidated grocery list grouped by category."
     }
   },
   required: ["meals", "groceryList"]
@@ -100,9 +117,7 @@ export const generateWeeklyPlan = async (prefs: UserPreferences): Promise<Weekly
     
     CRITICAL: 
     1. Ingredients and Instructions must be EXTREMELY SHORT and concise. 
-    2. Use simple words.
-    3. Ingredients: "Qty Item".
-    4. Steps: "Action detail."
+    2. Group grocery list items by category (e.g. Produce, Dairy, Meat).
   `;
 
   try {
