@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PokeDish AI - Gotta Cook 'Em All!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              poke: {
+                red: '#EA5D60',
+                blue: '#58ABF6',
+                green: '#2CDAB1',
+                yellow: '#F2CB55',
+                purple: '#9F5BBA',
+                brown: '#CA8179',
+                dark: '#303943',
+                light: '#F6F8FC',
+                white: '#FFFFFF',
+                gray: '#AAB2BD'
+              }
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            boxShadow: {
+              'poke': '0 10px 40px -10px rgba(0,0,0,0.08)',
+              'poke-hover': '0 20px 40px -10px rgba(0,0,0,0.12)'
+            }
+          }
+        }
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #F6F8FC;
+        color: #303943;
+      }
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #D1D5DB; 
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #9CA3AF; 
+      }
+      
+      .pokeball-bg {
+        position: fixed;
+        top: -10%;
+        right: -10%;
+        width: 60vh;
+        height: 60vh;
+        background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M200 400C310.457 400 400 310.457 400 200C400 89.543 310.457 0 200 0C89.543 0 0 89.543 0 200C0 310.457 89.543 400 200 400ZM200 260C233.137 260 260 233.137 260 200C260 166.863 233.137 140 200 140C166.863 140 140 166.863 140 200C140 233.137 166.863 260 200 260Z' fill='%23000000' fill-opacity='0.03'/%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M200 340C277.32 340 340 277.32 340 200C340 122.68 277.32 60 200 60C122.68 60 60 122.68 60 200C60 277.32 122.68 340 200 340ZM200 240C222.091 240 240 222.091 240 200C240 177.909 222.091 160 200 160C177.909 160 160 177.909 160 200C160 222.091 177.909 240 200 240Z' fill='%23F6F8FC'/%3E%3Cpath d='M398 200H260C260 233.137 233.137 260 200 260C166.863 260 140 233.137 140 200H2' stroke='%23000000' stroke-opacity='0.03' stroke-width='40'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-size: contain;
+        opacity: 0.6;
+        z-index: -1;
+        pointer-events: none;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.31.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <div class="pokeball-bg"></div>
+  </body>
+</html>
