@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
-import { GeneratedMeal } from '../types';
-import { Clock, Flame, Wallet, Heart, ArrowLeft, ChevronRight, Zap, Shield, Sparkles, ImageIcon, Activity, Headset } from 'lucide-react';
+import { GeneratedMeal, VegetableNutrient } from '../types';
+import { Clock, Flame, Wallet, Heart, ArrowLeft, ChevronRight, Zap, Shield, Sparkles, ImageIcon, Activity, Headset, Leaf, Info } from 'lucide-react';
 import LiveCookingSession from './LiveCookingSession';
 
 interface MealCardProps {
@@ -11,13 +12,51 @@ interface MealCardProps {
   onToggleFavorite: () => void;
 }
 
+const VegetableCard: React.FC<{ vegetable: VegetableNutrient }> = ({ vegetable }) => {
+  // Use a pseudo-random color based on the vegetable name length
+  const colors = [
+    'border-poke-green bg-green-50 text-green-700',
+    'border-poke-yellow bg-yellow-50 text-yellow-700',
+    'border-poke-red bg-red-50 text-red-700',
+    'border-orange-200 bg-orange-50 text-orange-700',
+    'border-purple-200 bg-purple-50 text-purple-700'
+  ];
+  const colorIndex = vegetable.name.length % colors.length;
+  const colorClass = colors[colorIndex];
+
+  return (
+    <div className={`min-w-[160px] md:min-w-[200px] rounded-2xl border-2 p-4 flex flex-col gap-2 shadow-sm transition-transform hover:-translate-y-1 ${colorClass}`}>
+       <div className="flex items-center justify-between">
+          <h4 className="font-black uppercase text-xs tracking-widest">{vegetable.name}</h4>
+          <Leaf className="w-3 h-3 opacity-50" />
+       </div>
+       
+       <div className="space-y-1">
+          <span className="text-[10px] font-bold opacity-60 uppercase">Power-Ups</span>
+          <div className="flex flex-wrap gap-1">
+             {vegetable.nutrients.map((n, i) => (
+               <span key={i} className="bg-white/50 px-2 py-0.5 rounded text-[10px] font-bold">
+                 {n}
+               </span>
+             ))}
+          </div>
+       </div>
+
+       <div className="mt-2 pt-2 border-t border-current border-opacity-10">
+          <div className="flex items-start gap-1.5">
+             <Info className="w-3 h-3 shrink-0 mt-0.5 opacity-70" />
+             <p className="text-[11px] font-bold leading-tight">{vegetable.healthBenefit}</p>
+          </div>
+       </div>
+    </div>
+  );
+};
+
 const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFavorite, onToggleFavorite }) => {
-  const [activeTab, setActiveTab] = useState<'ingredients' | 'steps' | 'tips'>('ingredients');
+  const [activeTab, setActiveTab] = useState<'ingredients' | 'steps' | 'tips' | 'nature'>('ingredients');
   const [showLiveSession, setShowLiveSession] = useState(false);
-  // Generate a random Pokemon ID between 1 and 800 (approx max for official artwork)
   const [pokemonId] = useState(() => Math.floor(Math.random() * 800) + 1);
 
-  // Determine color theme based on meal attributes
   const getThemeColor = () => {
     if (meal.tags.includes('Spicy')) return 'bg-poke-red text-poke-red';
     if (meal.tags.includes('Healthy') || meal.tags.includes('Vegetarian')) return 'bg-poke-green text-poke-green';
@@ -50,7 +89,6 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
         {/* Left Column: Image & Basic Info */}
         <div className="w-full md:w-1/2 flex flex-col gap-6">
             
-            {/* Title Section */}
             <div className="flex justify-between items-end px-2">
                 <div>
                 <h1 className="text-4xl md:text-5xl font-extrabold text-poke-dark tracking-tight leading-none">{meal.name}</h1>
@@ -66,7 +104,6 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
                 <span className="text-gray-300 font-bold text-xl">#{Math.floor(meal.timestamp % 1000).toString().padStart(3, '0')}</span>
             </div>
 
-            {/* Image Card */}
             <div className="relative aspect-square w-full rounded-[2.5rem] bg-white shadow-poke border border-gray-100 p-8 flex items-center justify-center overflow-hidden group">
                 <div className={`absolute inset-0 opacity-10 ${themeBg} rounded-[2.5rem]`}></div>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-gradient-to-tr from-white/0 to-white/80 rounded-full blur-3xl"></div>
@@ -112,7 +149,6 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
                 </button>
             </div>
 
-            {/* Stats Section */}
             <div className="bg-white rounded-3xl p-6 shadow-poke border border-gray-100 relative overflow-hidden">
                 <h3 className="font-bold text-lg text-poke-dark mb-4 relative z-10">Base Stats</h3>
                 
@@ -176,7 +212,6 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
 
         {/* Right Column: Details Tabs */}
         <div className="w-full md:w-1/2 bg-white rounded-[2.5rem] shadow-poke border border-gray-100 overflow-hidden flex flex-col min-h-[600px]">
-            {/* Action Bar for Live Session */}
             <div className="p-4 bg-gray-50 border-b border-gray-100 flex gap-2">
                <button 
                  onClick={() => setShowLiveSession(true)}
@@ -187,31 +222,34 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
                </button>
             </div>
 
-            {/* Tabs Header */}
-            <div className="flex p-2 gap-2 border-b border-gray-50">
-                {['ingredients', 'steps', 'tips'].map((tab) => (
+            <div className="flex p-2 gap-2 border-b border-gray-50 overflow-x-auto custom-scrollbar">
+                {[
+                  { id: 'ingredients', label: 'Items' },
+                  { id: 'steps', label: 'Moves' },
+                  { id: 'nature', label: 'Nature' },
+                  { id: 'tips', label: 'Evo Tips' }
+                ].map((tab) => (
                 <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab as any)}
-                    className={`flex-1 py-4 rounded-2xl font-bold text-sm uppercase tracking-wide transition-all ${
-                    activeTab === tab 
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`flex-1 min-w-[80px] py-4 rounded-2xl font-bold text-xs uppercase tracking-wide transition-all ${
+                    activeTab === tab.id 
                         ? 'bg-poke-light text-poke-dark shadow-inner' 
                         : 'bg-transparent text-gray-400 hover:text-gray-600'
                     }`}
                 >
-                    {tab}
+                    {tab.label}
                 </button>
                 ))}
             </div>
 
-            {/* Content Area */}
             <div className="p-8 flex-1 overflow-y-auto custom-scrollbar">
                 
                 <div className="mb-8">
-                <h3 className="font-bold text-lg text-poke-dark mb-2">Description</h3>
-                <p className="text-gray-500 leading-relaxed text-sm">
-                    {meal.description}
-                </p>
+                  <h3 className="font-bold text-lg text-poke-dark mb-2">Description</h3>
+                  <p className="text-gray-500 leading-relaxed text-sm">
+                      {meal.description}
+                  </p>
                 </div>
 
                 {activeTab === 'ingredients' && (
@@ -243,6 +281,34 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
                 </div>
                 )}
 
+                {activeTab === 'nature' && (
+                <div className="animate-in fade-in duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-bold text-lg text-poke-dark">Nature's Bounty</h3>
+                        <span className="text-[10px] font-bold text-gray-400 uppercase bg-gray-100 px-2 py-1 rounded-md">Dietary Tracker</span>
+                    </div>
+                    
+                    {meal.vegetableNutrients && meal.vegetableNutrients.length > 0 ? (
+                        <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
+                            {meal.vegetableNutrients.map((veg, idx) => (
+                                <VegetableCard key={idx} vegetable={veg} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+                            <Leaf className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                            <p className="text-sm font-bold text-gray-400">Scanning for nature stats...</p>
+                        </div>
+                    )}
+
+                    <div className="mt-6 p-4 bg-poke-blue/5 rounded-2xl border border-poke-blue/10">
+                        <p className="text-[11px] text-poke-blue font-bold leading-relaxed">
+                            💡 These cards highlight the functional benefits of your ingredients. Perfect for tracking key vitamins and minerals in your daily regimen!
+                        </p>
+                    </div>
+                </div>
+                )}
+
                 {activeTab === 'tips' && (
                 <div className="animate-in fade-in duration-300 space-y-4">
                     <h3 className="font-bold text-lg text-poke-dark mb-4">Evolutionary Tips</h3>
@@ -258,7 +324,6 @@ const MealCard: React.FC<MealCardProps> = ({ meal, onReset, isImageLoading, isFa
                 )}
             </div>
 
-            {/* Bottom Action */}
             <div className="p-6 border-t border-gray-50 bg-gray-50/50">
                 <button 
                 onClick={onReset}

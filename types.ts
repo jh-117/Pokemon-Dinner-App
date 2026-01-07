@@ -1,3 +1,4 @@
+
 export enum DietaryRestriction {
   None = 'None',
   Vegetarian = 'Vegetarian',
@@ -51,6 +52,12 @@ export interface Macros {
   fat: string;
 }
 
+export interface VegetableNutrient {
+  name: string;
+  nutrients: string[];
+  healthBenefit: string;
+}
+
 export interface MealSuggestion {
   name: string;
   description: string;
@@ -61,7 +68,8 @@ export interface MealSuggestion {
   calories: number;
   tags: string[];
   priceRange: string;
-  macros?: Macros; // Optional for backward compatibility
+  macros?: Macros;
+  vegetableNutrients?: VegetableNutrient[];
 }
 
 export interface GeneratedMeal extends MealSuggestion {

@@ -1,5 +1,5 @@
 {
-  "name": "DailyDish AI",
+  "name": "Pokemon-Meal-App",
   "description": "An intelligent meal planner that suggests what to eat every day based on your mood, ingredients, and preferences, complete with recipes and AI-generated food imagery.",
   "requestFramePermissions": [
     "microphone"

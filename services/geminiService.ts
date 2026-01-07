@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { UserPreferences, MealSuggestion, WeeklyPlan, GeneratedMeal } from "../types";
 
@@ -34,6 +35,19 @@ const mealProperties = {
     required: ["protein", "carbs", "fat"],
     description: "Nutritional macronutrients estimates."
   },
+  vegetableNutrients: {
+    type: Type.ARRAY,
+    items: {
+      type: Type.OBJECT,
+      properties: {
+        name: { type: Type.STRING, description: "The vegetable name" },
+        nutrients: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Key vitamins/minerals e.g. ['Vitamin A', 'Iron']" },
+        healthBenefit: { type: Type.STRING, description: "Short benefit e.g. 'Boosts Immunity'" }
+      },
+      required: ["name", "nutrients", "healthBenefit"]
+    },
+    description: "Nutrient breakdown for key vegetables in the dish. Useful for dietary tracking."
+  },
   tags: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Flavor profile tags" },
   priceRange: { type: Type.STRING, description: "Cost estimation: $, $$, or $$$" }
 };
@@ -41,7 +55,7 @@ const mealProperties = {
 const mealSchema = {
   type: Type.OBJECT,
   properties: mealProperties,
-  required: ["name", "description", "ingredients", "instructions", "tips", "cookingTime", "calories", "macros", "tags", "priceRange"],
+  required: ["name", "description", "ingredients", "instructions", "tips", "cookingTime", "calories", "macros", "tags", "priceRange", "vegetableNutrients"],
 };
 
 const weeklyPlanSchema = {
@@ -80,20 +94,21 @@ export const generateMealIdea = async (prefs: UserPreferences): Promise<MealSugg
     Ingredients: ${prefs.ingredients || "Any"}
     Mood: ${prefs.mood || "Any"}
 
-    CRITICAL INSTRUCTIONS FOR BREVITY:
-    1. Ingredients must be VERY short (e.g., "300g Chicken", "2 Garlic Cloves"). NO long explanations.
-    2. Instructions must be short actions (e.g., "Boil water.", "Chop onions."). Max 10 words per step.
-    3. Keep it visual and punchy.
+    CRITICAL INSTRUCTIONS FOR DIETARY TRACKING:
+    1. Always include the 'vegetableNutrients' array with at least 2-3 key vegetables from the dish.
+    2. Ingredients must be VERY short.
+    3. Instructions must be short actions.
+    4. Focus on the health benefits of the vegetables for people with dietary needs.
   `;
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         responseMimeType: "application/json",
         responseSchema: mealSchema,
-        systemInstruction: "You are a chef who speaks in short, efficient commands. You prioritize brevity.",
+        systemInstruction: "You are a health-conscious chef who specializes in dietary tracking and nutrient-rich cooking. You prioritize brevity and clarity.",
       },
     });
 
@@ -116,18 +131,19 @@ export const generateWeeklyPlan = async (prefs: UserPreferences): Promise<Weekly
     Diet: ${prefs.dietaryRestriction}
     
     CRITICAL: 
-    1. Ingredients and Instructions must be EXTREMELY SHORT and concise. 
-    2. Group grocery list items by category (e.g. Produce, Dairy, Meat).
+    1. Each meal MUST have 'vegetableNutrients' breakdown.
+    2. Ingredients and Instructions must be EXTREMELY SHORT. 
+    3. Group grocery list items by category.
   `;
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         responseMimeType: "application/json",
         responseSchema: weeklyPlanSchema,
-        systemInstruction: "You are a minimalist meal planner. Use as few words as possible.",
+        systemInstruction: "You are a minimalist health-focused meal planner. Include nutrient data for all meals.",
       },
     });
 
@@ -136,7 +152,6 @@ export const generateWeeklyPlan = async (prefs: UserPreferences): Promise<Weekly
     
     const rawData = JSON.parse(text);
     
-    // Post-process to ensure IDs exist
     const processedPlan: WeeklyPlan = {
       id: crypto.randomUUID(),
       timestamp: Date.now(),
